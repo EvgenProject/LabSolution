@@ -1,6 +1,8 @@
 using Core.Helper;
 using Core.Models;
+using FluentAssertions;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Core
 {
@@ -36,7 +38,20 @@ namespace Core
             ExcelHelper.SetDataToExcelFile(pathToExcelFile, newUser);
             ExcelHelper.SetDataToExcelFile(pathToExcelFile, newUser2, 3, false);
 
-            var data = ExcelHelper.GetTableFromExcelFile(pathToExcelFile);
+            //Getting data from excel and converting to User DTO
+            var listUsersDtoFromExcelFile = ExcelHelper.GetTableFromExcelFile(pathToExcelFile);
+
+            //Assert => using Linq
+            listUsersDtoFromExcelFile.First().Should().BeEquivalentTo(newUser);
+            listUsersDtoFromExcelFile.Last().Should().BeEquivalentTo(newUser2);
+            
+            //or
+
+            var firstUser = listUsersDtoFromExcelFile.Single(user => user.FirstName.Equals("Ricky"));
+            firstUser.Should().BeEquivalentTo(newUser);
+
+            var secondUser = listUsersDtoFromExcelFile.Single(user => user.LastName.Equals("Spears"));
+            secondUser.Should().BeEquivalentTo(newUser2);
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using Core.Models;
 using GemBox.Spreadsheet;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 
 namespace Core.Helper
 {
@@ -12,7 +15,7 @@ namespace Core.Helper
             SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
         }
 
-        public static DataTable GetTableFromExcelFile(
+        public static List<UserDto> GetTableFromExcelFile(
             string filePath,
             int sheetNumber = 0,
             int numberOfRows = 10)
@@ -33,7 +36,7 @@ namespace Core.Helper
             };
             var dataTable = GetTableWithCustomColumns();
             worksheet.ExtractToDataTable(dataTable, options);
-            return dataTable;
+            return ConvertDataTableToDto(dataTable);
         }
 
         public static void SetDataToExcelFile(
@@ -69,6 +72,22 @@ namespace Core.Helper
                     { "Email", typeof(string) },
                 }
             };
+        }
+
+        private static List<UserDto> ConvertDataTableToDto(DataTable table)
+        {
+            var userDtoList = table.AsEnumerable()
+                .Skip(1)
+                .Select(row =>
+                new UserDto
+                {
+                    FirstName = row.Field<string>("First Name"),
+                    LastName = row.Field<string>("Last Name"),
+                    Age = Convert.ToInt32(row.Field<string>("Age")),
+                    Email = row.Field<string>("Email"),
+                }
+            ).ToList();
+            return userDtoList;
         }
     }
 }
